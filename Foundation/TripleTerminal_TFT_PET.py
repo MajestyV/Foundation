@@ -21,7 +21,8 @@ class TFT:
         self.count = kwargs['num_device'] if 'num_device' in kwargs else 10         # Number of devices in one pattern set, default =10
         self.dx = kwargs['x_distance'] if 'x_distance' in kwargs else 8             # Distance between devices in x-axis, default = 8mm
         self.dy = kwargs['y_distance'] if 'y_distance' in kwargs else 0             # Distance between devices in y-axis, default = 0
-        self.w_semi = kwargs['semiconductor_width'] if 'semiconductor_width' in kwargs else 4  # Width of the semiconductor and dielectric layer
+        self.w_semi = kwargs['semiconductor_width'] if 'semiconductor_width' in kwargs else 2.5  # Width of the semiconductor layer
+        self.w_dielectric = kwargs['dielectric_width'] if 'dielectric_width' in kwargs else 4    # Width of the dielectric layer
         # self.device_size = kwargs['device_size'] if 'device_size' in kwargs else 8  # The length of one size of the device, regarding the device is square as default
 
         self.shift_vec = [x+3.5,y+3.5]             # Vector for shifting calculated coordinates to the desired starting point
@@ -83,6 +84,20 @@ class TFT:
 
         return square_list
 
+    def Dielectric(self):
+        sv = self.shift_vec
+        tv = self.translation_vec
+        w_dielectric = self.w_dielectric
+        count = self.count
+
+        square_list = []
+        for n in range(count):
+            x_shift = sv[0]+n*tv[0]
+            y_shift = sv[1]+n*tv[1]
+            square_list.append([-w_dielectric/2.0+x_shift,-w_dielectric/2.0+y_shift,w_dielectric,w_dielectric])
+
+        return square_list
+
     def Gate(self):
         sv = self.shift_vec
         tv = self.translation_vec
@@ -130,7 +145,7 @@ class TFT:
     def Pattern(self,pattern):
         pattern_dict = {'contact':self.Contact(),
                         'semiconductor':self.Semiconductor(),
-                        'dielectric':self.Semiconductor(),
+                        'dielectric':self.Dielectric(),
                         'gate':self.Gate(),
                         'gate_dualports':self.Gate_DualContact()}
         return pattern_dict[pattern]
