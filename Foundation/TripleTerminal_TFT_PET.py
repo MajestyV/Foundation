@@ -149,7 +149,6 @@ class TFT:
                         'gate':self.Gate(),
                         'gate_dualports':self.Gate_DualContact()}
         return pattern_dict[pattern]
-    #  The semiconductor layer and the dielectric layer share the same pattern
 
     def WritePattern(self,filename,saving_directory=path.dirname(__file__)):
         for n in ['contact']:
@@ -201,14 +200,10 @@ class TFT:
 
             file.close()
 
-            ptn.PreviewPattern(directory,filename+'_'+n,saving_directory)
+            ptn.PreviewPattern(directory,filename+'_'+n,saving_directory,X_unitcell=8000,Y_unitcell=1800,scale=100)
             ptn.ExcelToPTN(directory,filename+'_'+n,saving_directory,X_total=100.025,Y_total=20.025,DropletSpacing=self.DropletSpacing[n],X_unitcell=100,Y_unitcell=20)
 
         return
-
-
-
-
 
 if __name__ =='__main__':
     tft = TFT(x=0,y=8,l=0.050,dl=0.010,w=1,dw=0,lg=0.5,dlg=0,x_distance=8,y_distance=0)

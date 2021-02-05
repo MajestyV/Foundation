@@ -18,12 +18,12 @@ class TFT:
         self.dw = kwargs['dw'] if 'dw' in kwargs else 0           # changing step of channel width
         self.lg = kwargs['lg'] if 'lg' in kwargs else 1           # gate electrode length
         self.dlg = kwargs['dlg'] if 'dlg' in kwargs else 0        # changing step of gate electrode length
-        self.count = kwargs['num_device'] if 'num_device' in kwargs else 10  # Number of devices in one pattern set, default =10
-        self.dx = kwargs['x_distance'] if 'x_distance' in kwargs else 3  # Distance between devices in x-axis, default = 3mm
-        self.dy = kwargs['y_distance'] if 'y_distance' in kwargs else 0  # Distance between devices in y-axis, default = 0
-        self.w_semi = kwargs['semiconductor_width'] if 'semiconductor_width' in kwargs else 4  # Width of the semiconductor and dielectric layer
-        # self.device_size = kwargs['device_size'] if 'device_size' in kwargs else 8  # The length of one size of the device, regarding the device is square as default
+        self.w_semi = kwargs['semiconductor_width'] if 'semiconductor_width' in kwargs else 2.5  # Width of the semiconductor layer
+        self.w_dielectric = kwargs['dielectric_width'] if 'dielectric_width' in kwargs else 4    # Width if the dielectric layer
 
+        self.count = 10  # Number of devices for one set of device array
+        self.dx = 2.5      # Distance between devices in x-axis
+        self.dy = 0      # Distance between devices in y-axis
         self.shift_vec = [x + 3.5, y + 3.5]  # Vector for shifting calculated coordinates to the desired starting point
         self.translation_vec = [self.dx, self.dy]  # Vector for translating one device to a set of devices
 
@@ -41,4 +41,138 @@ class TFT:
                 self.DropletSpacing = dict.fromkeys(layer_list, int(ds_in))
 
     def Contact(self):
+        sv = self.shift_vec
         tv = self.translation_vec
+        l0 = self.l
+        dl = self.dl
+        w0 = self.w
+        dw = self.dw
+        count = self.count
+
+        square_list = []
+        for n in range(count):
+            w = w0+n*dw
+            l = l0+n*dl
+            x_shift = sv[0]+n*tv[0]
+            y_shift = sv[1]+n*tv[1]
+            square_list.append([-0.75+x_shift,-3.5+y_shift,1.5,1.5])
+            square_list.append([-0.5+x_shift,-2+y_shift,1,1])
+            square_list.append([-w/2.0+x_shift,-1+y_shift,w,1])
+            square_list.append([-w/2.0+x_shift,l+y_shift,w,1])
+            square_list.append([-0.5+x_shift,l+1+y_shift,1,1])
+            square_list.append([-0.75+x_shift,l+2+y_shift,1.5,1.5])
+
+        return square_list
+
+    def Semiconductor(self):
+        sv = self.shift_vec
+        w_semi = self.w_semi
+        l = self.dx
+        count = self.count
+
+        l_semi = 1+l*count
+        square_list = []
+        square_list.append([-1.5+sv[0],-w_semi/2.0+sv[1],l_semi,w_semi])
+
+        return square_list
+
+    def Dielectric(self):
+        sv = self.shift_vec
+        w_dielectric = self.w_dielectric
+        l = self.dx
+        count = self.count
+
+        l_dielectric = 2+l*count
+        square_list = []
+        square_list.append([-2+sv[0],-w_dielectric/2.0+sv[1],l_dielectric,w_dielectric])
+
+        return square_list
+
+    def Gate(self):
+        sv = self.shift_vec
+        tv = self.translation_vec
+        l0 = self.l
+        dl = self.dl
+        lg0 = self.lg
+        dlg = self.dlg
+        w = self.dx
+        count = self.count
+
+        square_list = []
+        for n in range(count):
+            l = l0+n*dl
+            lg = lg0+n*dlg
+            x_shift = sv[0]+n*tv[0]
+            y_shift = sv[1]+n*tv[1]
+            square_list.append([-w/2.0+x_shift,(l-lg)/2+y_shift,w,lg])
+
+        #  加上两个扎针区的图案
+        square_list.append([-3.5+sv[0],-2+sv[1],1.5,4])  # 左扎针区
+        square_list.append([-2+sv[0],-0.5+sv[1],0.75,1])
+        square_list.append([23.75+sv[0],-0.5+l/2.0+sv[1],1.25,1])  # 右扎针区
+        square_list.append([25+sv[0],-2+sv[1],1.5,4])
+
+        return square_list
+
+    def Pattern(self,pattern):
+        pattern_dict = {'contact':self.Contact(),
+                        'semiconductor':self.Semiconductor(),
+                        'dielectric':self.Dielectric(),
+                        'gate':self.Gate()}
+        return pattern_dict[pattern]
+
+    def WritePattern(self,filename,saving_directory=path.dirname(__file__)):
+        for n in ['contact']:
+            pattern = self.Pattern(n)
+            directory = saving_directory+filename+'_'+n+'.xlsx'
+
+            file = xlsxwriter.Workbook(directory)
+            pattern_sheet = file.add_worksheet()
+
+            pattern_sheet.write(0, 0, 'X_Start')  # Writing title
+            pattern_sheet.write(0, 1, 'Y_Start')
+            pattern_sheet.write(0, 2, 'X_Width')
+            pattern_sheet.write(0, 3, 'Y_Width')
+
+            for i in range(len(pattern)):
+                for j in range(len(pattern[0])):
+                    pattern_sheet.write(i + 1, j, pattern[i][j])
+
+            file.close()
+
+        return
+
+    def GeneratePatternSet(self, label, filename, saving_directory=path.dirname(__file__)):
+        ptn = GenPTN.ptn()
+        genlabel = GenLabel.Label()
+
+        for n in ['contact', 'semiconductor', 'dielectric', 'gate']:
+            marking = genlabel.MakeMarking(n, 0, 0)
+            if n == 'contact':
+                text = genlabel.Text(label, 6, 0)
+            else:
+                text = []
+            pattern = marking + text + self.Pattern(n)
+
+            directory = saving_directory + filename + '_' + n + '.xlsx'
+
+            file = xlsxwriter.Workbook(directory)
+            pattern_sheet = file.add_worksheet()
+
+            pattern_sheet.write(0, 0, 'X_Start')  # Writing title
+            pattern_sheet.write(0, 1, 'Y_Start')
+            pattern_sheet.write(0, 2, 'X_Width')
+            pattern_sheet.write(0, 3, 'Y_Width')
+
+            for i in range(len(pattern)):
+                for j in range(len(pattern[0])):
+                    pattern_sheet.write(i + 1, j, pattern[i][j])
+
+            file.close()
+
+            ptn.PreviewPattern(directory, filename + '_' + n, saving_directory,X_unitcell=8000,Y_unitcell=1800,scale=100)
+            ptn.ExcelToPTN(directory, filename + '_' + n, saving_directory, X_total=100.025, Y_total=20.025,DropletSpacing=self.DropletSpacing[n], X_unitcell=75, Y_unitcell=20)
+
+        return
+
+
