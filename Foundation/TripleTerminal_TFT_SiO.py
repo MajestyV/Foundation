@@ -1,7 +1,7 @@
 import xlsxwriter
 from os import  path
 from Foundation import GenPTN
-from Foundation import GenLabel
+from Foundation import GenLabel_2
 
 class TFT:
     "This function class is designed to generate coordinates for 3 terminals TFT used on silicon oxide wafer substrate."
@@ -144,12 +144,12 @@ class TFT:
 
     def GeneratePatternSet(self, label, filename, saving_directory=path.dirname(__file__)):
         ptn = GenPTN.ptn()
-        genlabel = GenLabel.Label()
+        genlabel = GenLabel_2.Label(markersize=3,fontsize=2,character_distance=0.2)
 
         for n in ['contact', 'semiconductor', 'dielectric', 'gate']:
-            marking = genlabel.MakeMarking(n, 0, 0)
+            marking = genlabel.Marker(n, 0, 0)
             if n == 'contact':
-                text = genlabel.Text(label, 6, 0)
+                text = genlabel.Text(label, 3.5, 0)
             else:
                 text = []
             pattern = marking + text + self.Pattern(n)
@@ -170,7 +170,7 @@ class TFT:
 
             file.close()
 
-            ptn.PreviewPattern(directory, filename + '_' + n, saving_directory,X_unitcell=8000,Y_unitcell=1800,scale=100)
+            ptn.PreviewPattern(directory, filename + '_' + n, saving_directory,X_unitcell=6000,Y_unitcell=3000,scale=200)
             ptn.ExcelToPTN(directory, filename + '_' + n, saving_directory, X_total=100.025, Y_total=20.025,DropletSpacing=self.DropletSpacing[n], X_unitcell=75, Y_unitcell=20)
 
         return

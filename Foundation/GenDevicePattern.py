@@ -16,7 +16,7 @@ class Device:
         return
 
     def TFT_on_SiO(self,label,filename,saving_directory,**kwargs):
-        tft = TripleTerminal_TFT_SiO.TFT(0,8,**kwargs)
+        tft = TripleTerminal_TFT_SiO.TFT(0,5,**kwargs)
         tft.GeneratePatternSet(label,filename,saving_directory)
         return
 
