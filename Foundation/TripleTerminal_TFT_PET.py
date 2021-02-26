@@ -201,7 +201,7 @@ class TFT:
             file.close()
 
             ptn.PreviewPattern(directory,filename+'_'+n,saving_directory,X_unitcell=8000,Y_unitcell=1800,scale=100)
-            ptn.ExcelToPTN(directory,filename+'_'+n,saving_directory,X_total=100.025,Y_total=20.025,DropletSpacing=self.DropletSpacing[n],X_unitcell=100,Y_unitcell=20)
+            ptn.ExcelToPTN(directory,filename+'_'+n,saving_directory,X_total=80.025,Y_total=20.025,DropletSpacing=self.DropletSpacing[n],X_unitcell=100,Y_unitcell=20)
 
         return
 

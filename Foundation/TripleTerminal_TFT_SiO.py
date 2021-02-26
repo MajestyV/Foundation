@@ -1,5 +1,5 @@
 import xlsxwriter
-from os import  path
+from os import path
 from Foundation import GenPTN
 from Foundation import GenLabel_2
 
@@ -171,7 +171,7 @@ class TFT:
             file.close()
 
             ptn.PreviewPattern(directory, filename + '_' + n, saving_directory,X_unitcell=6000,Y_unitcell=3000,scale=200)
-            ptn.ExcelToPTN(directory, filename + '_' + n, saving_directory, X_total=100.025, Y_total=20.025,DropletSpacing=self.DropletSpacing[n], X_unitcell=75, Y_unitcell=20)
+            ptn.ExcelToPTN(directory, filename + '_' + n, saving_directory, X_total=40.025, Y_total=15.025,DropletSpacing=self.DropletSpacing[n], X_unitcell=35, Y_unitcell=15)
 
         return
 
