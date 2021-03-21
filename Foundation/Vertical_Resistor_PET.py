@@ -41,6 +41,10 @@ class Resistor:
             elif isinstance(ds_in, int) or isinstance(ds_in, float):
                 self.DropletSpacing = dict.fromkeys(layer_list, int(ds_in))
 
+        # Defining the area of the unitcell of the pattern
+        self.X_unitcell = kwargs['X_unitcell'] if 'X_unitcell' in kwargs else 100  # Width of the unitcell
+        self.Y_unitcell = kwargs['Y_unitcell'] if 'Y_unitcell' in kwargs else 20  # Height of the unitcell
+
     def Bottom(self):
         sv = self.shift_vec
         tv = self.translation_vec
@@ -53,9 +57,9 @@ class Resistor:
             w = w0 + n * dw
             x_shift = sv[0] + n * tv[0]
             y_shift = sv[1] + n * tv[1]
-            square_list.append([-0.75 + x_shift, 3.5 + y_shift, 1.5, 1.5])
-            square_list.append([-w/2.0 + x_shift, 2 + y_shift, w, 4])
-            square_list.append([-0.75 + x_shift, -2 + y_shift, 1.5, 1.5])
+            square_list.append([-0.75 + x_shift, -3.5 + y_shift, 1.5, 1.5])
+            square_list.append([-w/2.0 + x_shift, -2 + y_shift, w, 4])
+            square_list.append([-0.75 + x_shift, 2 + y_shift, 1.5, 1.5])
 
         return square_list
 
@@ -85,9 +89,9 @@ class Resistor:
             w = w0 + n * dw
             x_shift = sv[0] + n * tv[0]
             y_shift = sv[1] + n * tv[1]
-            square_list.append([-3.5 + x_shift, 0.75 + y_shift, 1.5, 1.5])
-            square_list.append([-2 + x_shift, w/2.0 + y_shift, 4, w])
-            square_list.append([2 + x_shift, 0.75 + y_shift, 1.5, 1.5])
+            square_list.append([-3.5 + x_shift, -0.75 + y_shift, 1.5, 1.5])
+            square_list.append([-2 + x_shift, -w/2.0 + y_shift, 4, w])
+            square_list.append([2 + x_shift, -0.75 + y_shift, 1.5, 1.5])
 
         return square_list
 
@@ -101,8 +105,8 @@ class Resistor:
         for n in range(count):
             x_shift = sv[0]+n*tv[0]
             y_shift = sv[1]+n*tv[1]
-            square_list.append([-1+x_shift,3.5+y_shift,2,1.5])
-            square_list.append([-1+x_shift,-2+y_shift,2,1.5])
+            square_list.append([-1+x_shift,-3.5+y_shift,2,1.5])
+            square_list.append([-1+x_shift,2+y_shift,2,1.5])
 
         return square_list
 
@@ -115,8 +119,8 @@ class Resistor:
         for n in range(count):
             x_shift = sv[0] + n * tv[0]
             y_shift = sv[1] + n * tv[1]
-            square_list.append([-3.5 + x_shift, 1 + y_shift, 1.5, 2])
-            square_list.append([2 + x_shift, 1 + y_shift, 1.5, 2])
+            square_list.append([-3.5 + x_shift, -1 + y_shift, 1.5, 2])
+            square_list.append([2 + x_shift, -1 + y_shift, 1.5, 2])
 
         return square_list
 
@@ -193,7 +197,7 @@ class Resistor:
 
             file.close()
 
-            ptn.PreviewPattern(directory, filename + '_' + n, saving_directory, X_unitcell=8000, Y_unitcell=1800, scale=100)
-            ptn.ExcelToPTN(directory, filename + '_' + n, saving_directory, X_total=100.025, Y_total=20.025, DropletSpacing=self.DropletSpacing[n], X_unitcell=100, Y_unitcell=20)
+            ptn.PreviewPattern(directory, filename + '_' + n, saving_directory, X_unitcell=8000, Y_unitcell=1200, scale=100)
+            ptn.ExcelToPTN(directory, filename + '_' + n, saving_directory, X_total=self.X_unitcell+0.025, Y_total=self.Y_unitcell+0.025, DropletSpacing=self.DropletSpacing[n], X_unitcell=self.X_unitcell, Y_unitcell=self.Y_unitcell)
 
         return

@@ -28,7 +28,7 @@ class TFT:
         self.translation_vec = [self.dx, self.dy]  # Vector for translating one device to a set of devices
 
         # The following part is written to determining the droplet spacing setting used to print each layer
-        layer_list = ('contact', 'semiconductor', 'dielectric', 'gate')
+        layer_list = ('contact', 'semiconductor', 'dielectric', 'gate', 'contact for gate')
         self.DropletSpacing = dict.fromkeys(layer_list, 20)
         if 'DropletSpacing' in kwargs:
             ds_in = kwargs['DropletSpacing']
@@ -114,11 +114,25 @@ class TFT:
 
         return square_list
 
+    def Contact_for_gate(self):  # 单独生成栅极扎针区的图层，用于特种墨水打印的栅极，如：Graphene ink
+        sv = self.shift_vec
+        l0 = self.l
+        dl = self.dl
+        count = self.count
+        l = l0+count*dl
+
+        square_list = []
+        square_list.append([-3.5+sv[0],-2+sv[1],1.5,4])  # 左扎针区
+        square_list.append([25+sv[0],-2+sv[1],1.5,4])    # 右扎针区
+
+        return square_list
+
     def Pattern(self,pattern):
         pattern_dict = {'contact':self.Contact(),
                         'semiconductor':self.Semiconductor(),
                         'dielectric':self.Dielectric(),
-                        'gate':self.Gate()}
+                        'gate':self.Gate(),
+                        'contact for gate':self.Contact_for_gate()}
         return pattern_dict[pattern]
 
     def WritePattern(self,filename,saving_directory=path.dirname(__file__)):
@@ -146,8 +160,11 @@ class TFT:
         ptn = GenPTN.ptn()
         genlabel = GenLabel_2.Label(markersize=3,fontsize=2,character_distance=0.2)
 
-        for n in ['contact', 'semiconductor', 'dielectric', 'gate']:
-            marking = genlabel.Marker(n, 0, 0)
+        for n in ['contact', 'semiconductor', 'dielectric', 'gate', 'contact for gate']:
+            if n == 'contact for gate':
+                marking = genlabel.Marker('3', 0, 0)
+            else:
+                marking = genlabel.Marker(n, 0, 0)
             if n == 'contact':
                 text = genlabel.Text(label, 3.5, 0)
             else:

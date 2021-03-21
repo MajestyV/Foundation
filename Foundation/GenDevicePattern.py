@@ -1,5 +1,6 @@
 from Foundation import TripleTerminal_TFT_PET
 from Foundation import TripleTerminal_TFT_SiO
+from Foundation import Vertical_Resistor_PET
 
 class Device:
     """ This function set is written as interface to call different device pattern modules."""
@@ -18,6 +19,11 @@ class Device:
     def TFT_on_SiO(self,label,filename,saving_directory,**kwargs):
         tft = TripleTerminal_TFT_SiO.TFT(0,5,**kwargs)
         tft.GeneratePatternSet(label,filename,saving_directory)
+        return
+
+    def Resistor_on_PET(self,label,filename,saving_directory,**kwargs):
+        resistor = Vertical_Resistor_PET.Resistor(0,5,**kwargs)
+        resistor.GeneratePatternSet(label,filename,saving_directory)
         return
 
 if __name__ == '__main__':
