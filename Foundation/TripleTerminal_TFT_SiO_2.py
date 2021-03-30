@@ -14,21 +14,19 @@ class TFT:
         # variables in kwargs
         self.l = kwargs['l'] if 'l' in kwargs else 0.050          # channel length
         self.dl = kwargs['dl'] if 'dl' in kwargs else 0.010       # changing step of channel length
-        self.w = kwargs['w'] if 'w' in kwargs else 2              # channel width
+        self.w = kwargs['w'] if 'w' in kwargs else 1              # channel width
         self.dw = kwargs['dw'] if 'dw' in kwargs else 0           # changing step of channel width
-        self.lg = kwargs['lg'] if 'lg' in kwargs else 1           # gate electrode length
-        self.dlg = kwargs['dlg'] if 'dlg' in kwargs else 0        # changing step of gate electrode length
-        self.w_semi = kwargs['semiconductor_width'] if 'semiconductor_width' in kwargs else 2.5  # Width of the semiconductor layer
+        self.wg = kwargs['wg'] if 'wg' in kwargs else 1           # width of gate electrode
+        self.dwg = kwargs['dwg'] if 'dwg' in kwargs else 0        # changing step of the width of gate electrode
+        self.w_electrode = kwargs['contact_electrode_width'] if 'contact_electrode_width' in kwargs else 0.1  # Width of the drain and source electrode
+        self.w_semi = kwargs['semiconductor_width'] if 'semiconductor_width' in kwargs else 2  # Width of the semiconductor layer
         self.w_dielectric = kwargs['dielectric_width'] if 'dielectric_width' in kwargs else 4    # Width if the dielectric layer
 
-        self.count = 10  # Number of devices for one set of device array
-        self.dx = 2.5      # Distance between devices in x-axis
-        self.dy = 0      # Distance between devices in y-axis
-        self.shift_vec = [x + 3.5, y + 3.5]  # Vector for shifting calculated coordinates to the desired starting point
-        self.translation_vec = [self.dx, self.dy]  # Vector for translating one device to a set of devices
+        self.num_device = 10  # Number of devices in one set
+        self.translation_vec = [2.5,0]  # The vector that copies one device to the next one by translational symmetry
 
         # The following part is written to determining the droplet spacing setting used to print each layer
-        layer_list = ('contact', 'semiconductor', 'dielectric', 'gate', 'contact for gate')
+        layer_list = ('contact', 'semiconductor', 'dielectric', 'gate', 'contact for contact', 'contact for gate', 'contact for all')
         self.DropletSpacing = dict.fromkeys(layer_list, 20)
         if 'DropletSpacing' in kwargs:
             ds_in = kwargs['DropletSpacing']
@@ -41,90 +39,84 @@ class TFT:
                 self.DropletSpacing = dict.fromkeys(layer_list, int(ds_in))
 
     def Contact(self):
-        sv = self.shift_vec
         tv = self.translation_vec
         l0 = self.l
         dl = self.dl
         w0 = self.w
         dw = self.dw
-        count = self.count
+        w_elec = self.w_electrode
+        num_device = self.num_device
 
         square_list = []
-        for n in range(count):
+        for n in range(num_device):
             w = w0+n*dw
             l = l0+n*dl
-            x_shift = sv[0]+n*tv[0]
-            y_shift = sv[1]+n*tv[1]
-            square_list.append([-0.75+x_shift,-3.5+y_shift,1.5,1.5])
-            square_list.append([-0.5+x_shift,-2+y_shift,1,1])
-            square_list.append([-w/2.0+x_shift,-1+y_shift,w,1])
-            square_list.append([-w/2.0+x_shift,l+y_shift,w,1])
-            square_list.append([-0.5+x_shift,l+1+y_shift,1,1])
-            square_list.append([-0.75+x_shift,l+2+y_shift,1.5,1.5])
+            x_shift = self.x+n*tv[0]
+            y_shift = self.y+n*tv[1]
+            square_list.append([2.5+x_shift,y_shift,1.5,1.5])
+            square_list.append([3.25-(w_elec+l/2.0)+x_shift,1.5+y_shift,w_elec,2+w/2.0])
+            square_list.append([3.25+l/2.0+x_shift,3.5-w/2.0+y_shift,w_elec,2+w/2.0])
+            square_list.append([2.5+x_shift,5.5+y_shift,1.5,1.5])
 
         return square_list
 
     def Semiconductor(self):
-        sv = self.shift_vec
         w_semi = self.w_semi
-        l = self.dx
-        count = self.count
 
-        l_semi = 1+l*count
-        square_list = []
-        square_list.append([-1.5+sv[0],-w_semi/2.0+sv[1],l_semi,w_semi])
+        square_list = [[2+self.x,3.5-w_semi/2.0+self.y,25,w_semi]]
 
         return square_list
 
     def Dielectric(self):
-        sv = self.shift_vec
-        w_dielectric = self.w_dielectric
-        l = self.dx
-        count = self.count
+        w_dielec = self.w_dielectric
 
-        l_dielectric = 2+l*count
-        square_list = []
-        square_list.append([-2+sv[0],-w_dielectric/2.0+sv[1],l_dielectric,w_dielectric])
+        square_list = [[1.5+self.x,3.5-w_dielec/2.0+self.y,26,w_dielec]]
 
         return square_list
 
     def Gate(self):
-        sv = self.shift_vec
         tv = self.translation_vec
-        l0 = self.l
-        dl = self.dl
-        lg0 = self.lg
-        dlg = self.dlg
-        w = self.dx
-        count = self.count
+        wg0 = self.wg
+        dwg = self.dwg
+        num_device = self.num_device
 
         square_list = []
-        for n in range(count):
-            l = l0+n*dl
-            lg = lg0+n*dlg
-            x_shift = sv[0]+n*tv[0]
-            y_shift = sv[1]+n*tv[1]
-            square_list.append([-w/2.0+x_shift,(l-lg)/2+y_shift,w,lg])
+        for n in range(num_device):
+            wg = wg0+n*dwg
+            x_shift = self.x+n*tv[0]
+            y_shift = self.y+n*tv[1]
+            square_list.append([2+x_shift,3.5-wg/2.0+y_shift,2.5,wg])
 
         #  加上两个扎针区的图案
-        square_list.append([-3.5+sv[0],-2+sv[1],1.5,4])  # 左扎针区
-        square_list.append([-2+sv[0],-0.5+sv[1],0.75,1])
-        square_list.append([23.75+sv[0],-0.5+l/2.0+sv[1],1.25,1])  # 右扎针区
-        square_list.append([25+sv[0],-2+sv[1],1.5,4])
+        square_list.append([self.x,1.5+self.y,1.5,4])  # 左扎针区
+        square_list.append([1.5+self.x,3+self.y,0.5,1])
+        square_list.append([27+self.x,3+self.y,0.5,1])  # 右扎针区
+        square_list.append([27.5+self.x,1.5+self.y,1.5,4])
+
+        return square_list
+
+    def Contact_for_contact(self):  # 单独生成源漏极扎针区的图层，用于特种墨水打印的栅极，如：Graphene ink
+        tv = self.translation_vec
+        num_device = self.num_device
+
+        square_list = []
+        for n in range(num_device):
+            x_shift = self.x + n * tv[0]
+            y_shift = self.y + n * tv[1]
+            square_list.append([2.5 + x_shift, y_shift, 1.5, 1.5])
+            square_list.append([2.5 + x_shift, 5.5 + y_shift, 1.5, 1.5])
 
         return square_list
 
     def Contact_for_gate(self):  # 单独生成栅极扎针区的图层，用于特种墨水打印的栅极，如：Graphene ink
-        sv = self.shift_vec
-        l0 = self.l
-        dl = self.dl
-        count = self.count
-        l = l0+count*dl
-
         square_list = []
-        square_list.append([-3.5+sv[0],-2+sv[1],1.5,4])  # 左扎针区
-        square_list.append([25+sv[0],-2+sv[1],1.5,4])    # 右扎针区
+        square_list.append([self.x,1.5+self.y,1.5,4])  # 左扎针区
+        square_list.append([27.5+self.x,1.5+self.y,1.5,4])    # 右扎针区
 
+        return square_list
+
+    def Contact_for_all(self):
+        square_list = self.Contact_for_contact()+self.Contact_for_gate()
         return square_list
 
     def Pattern(self,pattern):
@@ -132,7 +124,9 @@ class TFT:
                         'semiconductor':self.Semiconductor(),
                         'dielectric':self.Dielectric(),
                         'gate':self.Gate(),
-                        'contact for gate':self.Contact_for_gate()}
+                        'contact for contact':self.Contact_for_contact(),
+                        'contact for gate':self.Contact_for_gate(),
+                        'contact for all':self.Contact_for_all()}
         return pattern_dict[pattern]
 
     def WritePattern(self,filename,saving_directory=path.dirname(__file__)):
@@ -160,8 +154,8 @@ class TFT:
         ptn = GenPTN.ptn()
         genlabel = GenLabel_2.Label(markersize=3,fontsize=2,character_distance=0.2)
 
-        for n in ['contact', 'semiconductor', 'dielectric', 'gate', 'contact for gate']:
-            if n == 'contact for gate':
+        for n in ['contact', 'semiconductor', 'dielectric', 'gate', 'contact for contact', 'contact for gate', 'contact for all']:
+            if (n in ['contact for contact', 'contact for gate', 'contact for all']):
                 marking = genlabel.Marker('3', 0, 0)
             else:
                 marking = genlabel.Marker(n, 0, 0)
@@ -187,7 +181,7 @@ class TFT:
 
             file.close()
 
-            ptn.PreviewPattern(directory, filename + '_' + n, saving_directory,X_unitcell=6000,Y_unitcell=3000,scale=200)
-            ptn.ExcelToPTN(directory, filename + '_' + n, saving_directory, X_total=40.025, Y_total=15.025,DropletSpacing=self.DropletSpacing[n], X_unitcell=35, Y_unitcell=15)
+            ptn.PreviewPattern(directory, filename + '_' + n, saving_directory,X_unitcell=6000,Y_unitcell=3000,scale=180)
+            ptn.ExcelToPTN(directory, filename + '_' + n, saving_directory, X_total=35.025, Y_total=15.025,DropletSpacing=self.DropletSpacing[n], X_unitcell=35, Y_unitcell=15)
 
         return
