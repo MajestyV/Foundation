@@ -25,6 +25,12 @@ class TFT:
         self.num_device = 10  # Number of devices in one set
         self.translation_vec = [2.5,0]  # The vector that copies one device to the next one by translational symmetry
 
+        # 这个标签可以将整个器件的版图沿 y=x 翻转
+        self.coordinate = kwargs['coordinate'] if 'coordinate' in kwargs else 'normal'
+        # 定义unitcell的大小
+        self.X_unitcell = kwargs['X_unitcell'] if 'X_unitcell' in kwargs else 35
+        self.Y_unitcell = kwargs['Y_unitcell'] if 'Y_unitcell' in kwargs else 15
+
         # The following part is written to determining the droplet spacing setting used to print each layer
         layer_list = ('contact', 'semiconductor', 'dielectric', 'gate', 'contact for contact', 'contact for gate', 'contact for all')
         self.DropletSpacing = dict.fromkeys(layer_list, 20)
@@ -119,6 +125,7 @@ class TFT:
         square_list = self.Contact_for_contact()+self.Contact_for_gate()
         return square_list
 
+    # 把所有的版图信息保存到一个字典里方便引用
     def Pattern(self,pattern):
         pattern_dict = {'contact':self.Contact(),
                         'semiconductor':self.Semiconductor(),
@@ -129,6 +136,14 @@ class TFT:
                         'contact for all':self.Contact_for_all()}
         return pattern_dict[pattern]
 
+    # 用于将版图X，Y坐标翻转的模块
+    def FlipPattern(self,pattern):
+        for n in range(len(pattern)):
+            x, y, x_width, y_width = pattern[n]
+            pattern[n] = [y,x,y_width,x_width]
+        return pattern
+
+    # 用于把版图信息写进Excel的模块
     def WritePattern(self,filename,saving_directory=path.dirname(__file__)):
         for n in ['contact']:
             pattern = self.Pattern(n)
@@ -153,6 +168,8 @@ class TFT:
     def GeneratePatternSet(self, label, filename, saving_directory=path.dirname(__file__)):
         ptn = GenPTN.ptn()
         genlabel = GenLabel_2.Label(markersize=3,fontsize=2,character_distance=0.2)
+        X_unitcell = self.X_unitcell
+        Y_unitcell = self.Y_unitcell
 
         for n in ['contact', 'semiconductor', 'dielectric', 'gate', 'contact for contact', 'contact for gate', 'contact for all']:
             if (n in ['contact for contact', 'contact for gate', 'contact for all']):
@@ -164,6 +181,12 @@ class TFT:
             else:
                 text = []
             pattern = marking + text + self.Pattern(n)
+
+            if self.coordinate == 'flip':
+                pattern = self.FlipPattern(pattern)
+                X_unitcell = self.Y_unitcell  # 这里不能用Y_unitcell，不然每次循环都会把unitcell的长跟宽调换，要用不受影响的全局变量
+                Y_unitcell = self.X_unitcell
+
 
             directory = saving_directory + filename + '_' + n + '.xlsx'
 
@@ -181,7 +204,8 @@ class TFT:
 
             file.close()
 
-            ptn.PreviewPattern(directory, filename + '_' + n, saving_directory,X_unitcell=6000,Y_unitcell=3000,scale=180)
-            ptn.ExcelToPTN(directory, filename + '_' + n, saving_directory, X_total=35.025, Y_total=15.025,DropletSpacing=self.DropletSpacing[n], X_unitcell=35, Y_unitcell=15)
+            scale = 150  # This scale is used to determined the magnification of the pattern in the preview BMP file.
+            ptn.PreviewPattern(directory, filename + '_' + n, saving_directory,X_unitcell=X_unitcell*scale,Y_unitcell=Y_unitcell*scale,scale=scale)
+            ptn.ExcelToPTN(directory, filename + '_' + n, saving_directory, X_total=X_unitcell+0.025, Y_total=Y_unitcell+0.025,DropletSpacing=self.DropletSpacing[n], X_unitcell=X_unitcell, Y_unitcell=Y_unitcell)
 
         return
