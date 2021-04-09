@@ -95,6 +95,8 @@ class ptn:
             file.write(self.PTN_Content)
             file.close()
 
+    # def GenExcel
+
     # This function is for converting Excel file to PTN file.
     def ExcelToPTN(self,Excel_file,file_name,saving_directory=path.dirname(__file__),X_total=40.025,Y_total=40.025,DropletSpacing=20,layer=1,X_unitcell=40,Y_unitcell=40,x_count=1,y_count=1):
         self.PTN()
@@ -121,7 +123,7 @@ class ptn:
         return pattern
 
     # Using GenBMP to generate a BMP picture to preview the pattern of a unitcell in the Excel file.
-    def PreviewPattern(self,Excel_file,file_name,saving_directory=path.dirname(__file__),X_unitcell=8000,Y_unitcell=1800,scale=100):
+    def PreviewPattern(self,Excel_file,file_name,saving_directory=path.dirname(__file__)+'/',X_unitcell=8000,Y_unitcell=1800,scale=100):
         file_name = saving_directory+file_name+".bmp"
 
         pattern_data = xlrd.open_workbook(Excel_file)

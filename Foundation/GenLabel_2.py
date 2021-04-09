@@ -163,8 +163,15 @@ class Label:
                              '8': self.Array_to_Pattern(np.array(character_array.Character_8()), x, y),
                              '9': self.Array_to_Pattern(np.array(character_array.Character_9()), x, y),
                              'A': self.Array_to_Pattern(np.array(character_array.Character_A()), x, y),
-                             'T': self.Array_to_Pattern(np.array(character_array.Character_T()), x, y),
+                             'B': self.Array_to_Pattern(np.array(character_array.Character_B()), x, y),
+                             'C': self.Array_to_Pattern(np.array(character_array.Character_C()), x, y),
+                             'D': self.Array_to_Pattern(np.array(character_array.Character_D()), x, y),
+                             'E': self.Array_to_Pattern(np.array(character_array.Character_E()), x, y),
+                             'F': self.Array_to_Pattern(np.array(character_array.Character_F()), x, y),
                              'G': self.Array_to_Pattern(np.array(character_array.Character_G()), x, y),
+                             'H': self.Array_to_Pattern(np.array(character_array.Character_H()), x, y),
+                             'I': self.Array_to_Pattern(np.array(character_array.Character_I()), x, y),
+                             'T': self.Array_to_Pattern(np.array(character_array.Character_T()), x, y),
                              '-': self.Array_to_Pattern(np.array(character_array.Character_Dash()), x, y),
                              ' ': self.Array_to_Pattern(np.array(character_array.Character_Blank()), x, y)}
         return character_pattern[character]

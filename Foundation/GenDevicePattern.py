@@ -2,6 +2,9 @@ from Foundation import TripleTerminal_TFT_PET
 from Foundation import TripleTerminal_TFT_SiO
 from Foundation import TripleTerminal_TFT_SiO_2
 from Foundation import Vertical_Resistor_PET
+from Foundation import GenLabel_2
+from Foundation import GenPTN
+import xlsxwriter
 
 class Device:
     """ This function set is written as interface to call different device pattern modules."""
@@ -31,6 +34,47 @@ class Device:
         resistor = Vertical_Resistor_PET.Resistor(0,5,**kwargs)
         resistor.GeneratePatternSet(label,filename,saving_directory)
         return
+
+    def Merge(self,label,filename,saving_directory,**kwargs):
+        tft1 = TripleTerminal_TFT_SiO.TFT(0,5,**kwargs)
+        contact1 = tft1.Pattern('contact')
+        semiconductor1 = tft1.Pattern('semiconductor')
+        dielectric1 = tft1.Pattern('dielectric')
+        tft2 = TripleTerminal_TFT_SiO_2.TFT(35,5,**kwargs)
+        contact2 = tft2.Pattern('contact')
+        semiconductor2 = tft2.Pattern('semiconductor')
+        dielectric2 = tft2.Pattern('dielectric')
+
+        ptn = GenPTN.ptn()
+        genlabel = GenLabel_2.Label(markersize=3,fontsize=2,character_distance=0.2)
+
+        pattern_dict = {'contact': contact1+contact2+genlabel.Marker('0',0,0)+genlabel.Text(label,3.5,0),
+                        'semiconductor': semiconductor1+semiconductor2+genlabel.Marker('1',0,0),
+                        'dielectric': dielectric1+dielectric2+genlabel.Marker('2',0,0)}
+
+        scale=50
+        for n in ['contact','semiconductor','dielectric']:
+            directory = saving_directory + filename + '_' + n + '.xlsx'
+            pattern = pattern_dict[n]
+
+            file = xlsxwriter.Workbook(directory)
+            pattern_sheet = file.add_worksheet()
+
+            pattern_sheet.write(0, 0, 'X_Start')  # Writing title
+            pattern_sheet.write(0, 1, 'Y_Start')
+            pattern_sheet.write(0, 2, 'X_Width')
+            pattern_sheet.write(0, 3, 'Y_Width')
+
+            for i in range(len(pattern)):
+                for j in range(len(pattern[0])):
+                    pattern_sheet.write(i + 1, j, pattern[i][j])
+
+            file.close()
+
+            ptn.PreviewPattern(directory, filename + '_' + n, saving_directory, X_unitcell=70*scale, Y_unitcell=15 * scale, scale=scale)
+            ptn.ExcelToPTN(directory, filename + '_' + n, saving_directory, X_total=70 + 0.025,Y_total=15 + 0.025, X_unitcell=70,Y_unitcell=15)
+        return
+
 
 if __name__ == '__main__':
     device = Device()
