@@ -2,6 +2,7 @@ from Foundation import TripleTerminal_TFT_PET
 from Foundation import TripleTerminal_TFT_SiO
 from Foundation import TripleTerminal_TFT_SiO_2
 from Foundation import Vertical_Resistor_PET
+from Foundation import Characterization_samples
 from Foundation import GenLabel_2
 from Foundation import GenPTN
 import xlsxwriter
@@ -35,6 +36,12 @@ class Device:
         resistor.GeneratePatternSet(label,filename,saving_directory)
         return
 
+    def Characterization_samples(self,filename,saving_directory,**kwargs):
+        sample = Characterization_samples.samples(0,0,**kwargs)
+        sample.GeneratePatternSet(filename,saving_directory)
+        return
+
+    # 此函数用于融合两种不同器件阵列的版图
     def Merge(self,label,filename,saving_directory,**kwargs):
         tft1 = TripleTerminal_TFT_SiO.TFT(0,5,**kwargs)
         contact1 = tft1.Pattern('contact')

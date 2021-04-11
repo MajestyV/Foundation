@@ -1,14 +1,17 @@
 from Foundation import GenBMP
 import numpy as np
 import xlrd
+import xlsxwriter
 import os
 from os import path
+
+default_directory = path.dirname(__file__)+ '/'  # 默认的文件保存路径，为全局变量
 
 class ptn:
     """ This script is designed to extract PTN file information. """
 
     def __init__(self):
-        self.a = 1 # Useless line
+        self.name = ptn
 
     def GetPTNContent(self,file_path):
         file = open(file_path)
@@ -72,7 +75,7 @@ class ptn:
 
         return content
 
-    def Save_PTN(self,file_name,saving_directory=path.dirname(__file__)):
+    def Save_PTN(self,file_name,saving_directory=default_directory):
         self.PTN_Content = self.PTN_Content+"</PatternBlock></PatternFile>"
         file_name = saving_directory+file_name+'.ptn'
         if os.path.exists(file_name):
@@ -95,10 +98,29 @@ class ptn:
             file.write(self.PTN_Content)
             file.close()
 
-    # def GenExcel
+    # 把版图设计信息写入Excel文件的模块
+    def WritePattern(self,pattern,filename,saving_directory=default_directory):
+        excel_file_path = saving_directory+filename+'.xlsx'
+
+        file = xlsxwriter.Workbook(excel_file_path)
+        pattern_sheet = file.add_worksheet()
+
+        pattern_sheet.write(0, 0, 'X_Start')  # Writing title
+        pattern_sheet.write(0, 1, 'Y_Start')
+        pattern_sheet.write(0, 2, 'X_Width')
+        pattern_sheet.write(0, 3, 'Y_Width')
+
+        for i in range(len(pattern)):
+            for j in range(len(pattern[0])):
+                pattern_sheet.write(i + 1, j, pattern[i][j])
+
+        file.close()
+
+        return excel_file_path
+
 
     # This function is for converting Excel file to PTN file.
-    def ExcelToPTN(self,Excel_file,file_name,saving_directory=path.dirname(__file__),X_total=40.025,Y_total=40.025,DropletSpacing=20,layer=1,X_unitcell=40,Y_unitcell=40,x_count=1,y_count=1):
+    def ExcelToPTN(self,Excel_file,file_name,saving_directory=default_directory,X_total=40.025,Y_total=40.025,DropletSpacing=20,layer=1,X_unitcell=40,Y_unitcell=40,x_count=1,y_count=1):
         self.PTN()
         self.PTN_GeneralConfig(X_total,Y_total,DropletSpacing=DropletSpacing,LayerCount=layer)
         self.PTN_Unitcell(X_unitcell,Y_unitcell,MaxXCount=x_count,MaxYCount=y_count)
@@ -123,7 +145,7 @@ class ptn:
         return pattern
 
     # Using GenBMP to generate a BMP picture to preview the pattern of a unitcell in the Excel file.
-    def PreviewPattern(self,Excel_file,file_name,saving_directory=path.dirname(__file__)+'/',X_unitcell=8000,Y_unitcell=1800,scale=100):
+    def PreviewPattern(self,Excel_file,file_name,saving_directory=default_directory,X_unitcell=8000,Y_unitcell=1800,scale=100):
         file_name = saving_directory+file_name+".bmp"
 
         pattern_data = xlrd.open_workbook(Excel_file)

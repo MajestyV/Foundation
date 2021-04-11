@@ -1,7 +1,8 @@
-import xlsxwriter
 from os import path
 from Foundation import GenPTN
 from Foundation import GenLabel_2
+
+default_directory = path.dirname(__file__)+'/'  # 设置默认的保存路径
 
 class Resistor:
     "This function class is designed to generate coordinates for resistor or similar device like photodetector (photoresistor type)."
@@ -139,27 +140,6 @@ class Resistor:
                         'contact for both': self.Contact_for_both()}
         return pattern_dict[pattern]
 
-    #def WritePattern(self, filename, saving_directory=path.dirname(__file__)):
-        #for n in ['bottom']:
-            #pattern = self.Pattern(n)
-            #directory = saving_directory + filename + '_' + n + '.xlsx'
-
-            #file = xlsxwriter.Workbook(directory)
-            #pattern_sheet = file.add_worksheet()
-
-            #pattern_sheet.write(0, 0, 'X_Start')  # Writing title
-            #pattern_sheet.write(0, 1, 'Y_Start')
-            #pattern_sheet.write(0, 2, 'X_Width')
-            #pattern_sheet.write(0, 3, 'Y_Width')
-
-            #for i in range(len(pattern)):
-                #for j in range(len(pattern[0])):
-                    #pattern_sheet.write(i + 1, j, pattern[i][j])
-
-            #file.close()
-
-        #return
-
     def GeneratePatternSet(self, label, filename, saving_directory=path.dirname(__file__)):
         ptn = GenPTN.ptn()
         genlabel = GenLabel_2.Label(markersize=3, fontsize=2, character_distance=0.2)
@@ -181,23 +161,10 @@ class Resistor:
                 text = []
             pattern = marker + text + self.Pattern(n)
 
-            directory = saving_directory + filename + '_' + n + '.xlsx'
+            excel_file = saving_directory + filename + '_' + n + '.xlsx'
 
-            file = xlsxwriter.Workbook(directory)
-            pattern_sheet = file.add_worksheet()
-
-            pattern_sheet.write(0, 0, 'X_Start')  # Writing title
-            pattern_sheet.write(0, 1, 'Y_Start')
-            pattern_sheet.write(0, 2, 'X_Width')
-            pattern_sheet.write(0, 3, 'Y_Width')
-
-            for i in range(len(pattern)):
-                for j in range(len(pattern[0])):
-                    pattern_sheet.write(i + 1, j, pattern[i][j])
-
-            file.close()
-
-            ptn.PreviewPattern(directory, filename + '_' + n, saving_directory, X_unitcell=8000, Y_unitcell=1200, scale=100)
-            ptn.ExcelToPTN(directory, filename + '_' + n, saving_directory, X_total=self.X_unitcell+0.025, Y_total=self.Y_unitcell+0.025, DropletSpacing=self.DropletSpacing[n], X_unitcell=self.X_unitcell, Y_unitcell=self.Y_unitcell)
+            ptn.WritePattern(pattern, filename + '_' + n, saving_directory)
+            ptn.PreviewPattern(excel_file, filename + '_' + n, saving_directory, X_unitcell=8000, Y_unitcell=1200, scale=100)
+            ptn.ExcelToPTN(excel_file, filename + '_' + n, saving_directory, X_total=self.X_unitcell+0.025, Y_total=self.Y_unitcell+0.025, DropletSpacing=self.DropletSpacing[n], X_unitcell=self.X_unitcell, Y_unitcell=self.Y_unitcell)
 
         return

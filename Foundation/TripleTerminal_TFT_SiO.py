@@ -1,7 +1,8 @@
-import xlsxwriter
 from os import path
 from Foundation import GenPTN
 from Foundation import GenLabel_2
+
+default_directory = path.dirname(__file__)+'/'  # 设置默认的保存路径
 
 class TFT:
     "This function class is designed to generate coordinates for 3 terminals TFT used on silicon oxide wafer substrate."
@@ -149,28 +150,7 @@ class TFT:
             pattern[n] = [y, x, y_width, x_width]
         return pattern
 
-    def WritePattern(self,filename,saving_directory=path.dirname(__file__)):
-        for n in ['contact']:
-            pattern = self.Pattern(n)
-            directory = saving_directory+filename+'_'+n+'.xlsx'
-
-            file = xlsxwriter.Workbook(directory)
-            pattern_sheet = file.add_worksheet()
-
-            pattern_sheet.write(0, 0, 'X_Start')  # Writing title
-            pattern_sheet.write(0, 1, 'Y_Start')
-            pattern_sheet.write(0, 2, 'X_Width')
-            pattern_sheet.write(0, 3, 'Y_Width')
-
-            for i in range(len(pattern)):
-                for j in range(len(pattern[0])):
-                    pattern_sheet.write(i + 1, j, pattern[i][j])
-
-            file.close()
-
-        return
-
-    def GeneratePatternSet(self, label, filename, saving_directory=path.dirname(__file__)):
+    def GeneratePatternSet(self, label, filename, saving_directory=default_directory):
         ptn = GenPTN.ptn()
         genlabel = GenLabel_2.Label(markersize=3,fontsize=2,character_distance=0.2)
         X_unitcell = self.X_unitcell
@@ -192,23 +172,10 @@ class TFT:
                 X_unitcell = self.Y_unitcell  # 这里不能用Y_unitcell，不然每次循环都会把unitcell的长跟宽调换，要用不受影响的全局变量
                 Y_unitcell = self.X_unitcell
 
-            directory = saving_directory + filename + '_' + n + '.xlsx'
+            excel_file = saving_directory+filename+'_'+n+'.xlsx'
 
-            file = xlsxwriter.Workbook(directory)
-            pattern_sheet = file.add_worksheet()
-
-            pattern_sheet.write(0, 0, 'X_Start')  # Writing title
-            pattern_sheet.write(0, 1, 'Y_Start')
-            pattern_sheet.write(0, 2, 'X_Width')
-            pattern_sheet.write(0, 3, 'Y_Width')
-
-            for i in range(len(pattern)):
-                for j in range(len(pattern[0])):
-                    pattern_sheet.write(i + 1, j, pattern[i][j])
-
-            file.close()
-
-            ptn.PreviewPattern(directory, filename + '_' + n, saving_directory,X_unitcell=X_unitcell*self.scale,Y_unitcell=Y_unitcell*self.scale,scale=self.scale)
-            ptn.ExcelToPTN(directory, filename + '_' + n, saving_directory, X_total=X_unitcell+0.025, Y_total=Y_unitcell+0.025,DropletSpacing=self.DropletSpacing[n], X_unitcell=X_unitcell, Y_unitcell=Y_unitcell)
+            ptn.WritePattern(pattern,filename+'_'+n,saving_directory)
+            ptn.PreviewPattern(excel_file, filename + '_' + n, saving_directory,X_unitcell=X_unitcell*self.scale,Y_unitcell=Y_unitcell*self.scale,scale=self.scale)
+            ptn.ExcelToPTN(excel_file, filename + '_' + n, saving_directory, X_total=X_unitcell+0.025, Y_total=Y_unitcell+0.025,DropletSpacing=self.DropletSpacing[n], X_unitcell=X_unitcell, Y_unitcell=Y_unitcell)
 
         return
